@@ -1,16 +1,24 @@
-// Load express
 const express = require("express");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+
+dotenv.config(); // load .env file
+
 const app = express();
+app.use(express.json());
 
-// Choose a port
-const PORT = 3000;
+// Connect MongoDB
+connectDB();
 
-// Define a route
+// Routes
 app.get("/", (req, res) => {
-  res.send("Hello, Express Server is running!");
+  res.send("Hello, Express + MongoDB Atlas is running!");
 });
 
-// Start the server
+
+
+// Start server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
