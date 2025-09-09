@@ -4,22 +4,46 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-// Register
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, role, profile } = req.body;
 
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ success: false, msg: "User already exists" });
+    // basic validation
+    if (!email || !password || !role) {
+      return res.status(400).json({ message: "Email, password and role are required" });
+    }
 
-    const newUser = new User({ email, password, role });
-    await newUser.save();
+    // check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-    res.json({ success: true, user: { email, role } });
-  } catch (err) {
-    res.status(500).json({ success: false, msg: err.message });
+    // create new user
+    const user = new User({
+      email,
+      password, // ⚠️ For hackathon simple version, no hashing. Use bcrypt in production.
+      role,
+      profile: profile || {}, // optional
+    });
+
+    await user.save();
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        profile: user.profile,
+      },
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // Login
 router.post("/login", async (req, res) => {
